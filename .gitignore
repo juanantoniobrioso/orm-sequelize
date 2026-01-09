@@ -1,0 +1,45 @@
+# --- Dependencias ---
+node_modules/
+jspm_packages/
+
+# --- Testing ---
+coverage/
+.nyc_output/
+
+# --- Producción / Build ---
+build/
+dist/
+out/
+
+# --- Archivos de Entorno y Seguridad (¡IMPORTANTE!) ---
+.env
+.env.test
+.env.production
+.env.local
+
+# --- Logs y Diagnósticos ---
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# --- Archivos de Sistema Operativo ---
+.DS_Store
+Thumbs.db
+
+# --- IDEs y Editores ---
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# --- Frameworks específicos (Opcional) ---
+# Next.js
+.next/
+# NestJS
+dist/
+# Serverless
+.serverless/
