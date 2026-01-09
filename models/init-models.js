@@ -2,6 +2,7 @@ var DataTypes = require("sequelize").DataTypes;
 var _categorias = require("./categorias");
 var _clientes = require("./clientes");
 var _detalles_pedido = require("./detalles_pedido");
+var _log = require("./log");
 var _pedidos = require("./pedidos");
 var _productos = require("./productos");
 
@@ -9,6 +10,7 @@ function initModels(sequelize) {
   var categorias = _categorias(sequelize, DataTypes);
   var clientes = _clientes(sequelize, DataTypes);
   var detalles_pedido = _detalles_pedido(sequelize, DataTypes);
+  var log = _log(sequelize, DataTypes);
   var pedidos = _pedidos(sequelize, DataTypes);
   var productos = _productos(sequelize, DataTypes);
 
@@ -23,6 +25,7 @@ function initModels(sequelize) {
     categorias,
     clientes,
     detalles_pedido,
+    log,
     pedidos,
     productos,
   };

@@ -1,10 +1,22 @@
 import express from "express";
 import productoRoutes from "./routes/productosRoutes.js";
+import logRoutes from "./routes/logRoutes.js";
+import pedidosRoutes from "./routes/pedidosRoutes.js";
+import clientesRoutes from "./routes/clientesRoutes.js";
+import categoriasRoutes from "./routes/categoriasRoutes.js";
 import { sequelize } from "./config/db.js";
+import initModels from "./models/init-models.js";
+import detalles_pedido from "./models/detalles_pedido.js";
 const app = express();
 app.use(express.json());
+const models = initModels(sequelize);
 // Rutas
 app.use("/api/productos", productoRoutes);
+app.use("/api/logs", logRoutes);
+app.use("/api/pedidos", pedidosRoutes);
+app.use("/api/clientes", clientesRoutes);
+app.use("/api/categorias", categoriasRoutes);
+app.use("/api/detalles_pedido", detalles_pedidoRoutes);
 // Sincronizar base de datos
 (async () => {
 try {
