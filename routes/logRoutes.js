@@ -1,19 +1,13 @@
 // routes/logRoutes.js
-import express from "express";
-import {
-  crearLo,
-  obtenerLog,
-  obtenerLo,
-  actualizarLo,
-  eliminarLo
-} from "../controllers/logController.js";
+const express = require("express");
+const controller = require("../controllers/logController.js");
 
 const router = express.Router();
 
-router.get("/", obtenerLog);
-router.get("/:id", obtenerLo);
-router.post("/", crearLo);
-router.put("/:id", actualizarLo);
-router.delete("/:id", eliminarLo);
+router.get("/", controller.getAll);
+router.get("/:id", controller.getById);
+router.post("/", controller.create);
+router.put("/:id", controller.update);
+router.delete("/:id", controller.delete);
 
-export default router;
+module.exports = router;

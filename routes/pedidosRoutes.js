@@ -1,19 +1,13 @@
 // routes/pedidosRoutes.js
-import express from "express";
-import {
-  crearPedido,
-  obtenerPedidos,
-  obtenerPedido,
-  actualizarPedido,
-  eliminarPedido
-} from "../controllers/pedidosController.js";
+const express = require("express");
+const controller = require("../controllers/pedidosController.js");
 
 const router = express.Router();
 
-router.get("/", obtenerPedidos);
-router.get("/:id", obtenerPedido);
-router.post("/", crearPedido);
-router.put("/:id", actualizarPedido);
-router.delete("/:id", eliminarPedido);
+router.get("/", controller.getAll);
+router.get("/:id", controller.getById);
+router.post("/", controller.create);
+router.put("/:id", controller.update);
+router.delete("/:id", controller.delete);
 
-export default router;
+module.exports = router;

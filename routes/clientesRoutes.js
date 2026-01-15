@@ -1,19 +1,13 @@
 // routes/clientesRoutes.js
-import express from "express";
-import {
-  crearCliente,
-  obtenerClientes,
-  obtenerCliente,
-  actualizarCliente,
-  eliminarCliente
-} from "../controllers/clientesController.js";
+const express = require("express");
+const controller = require("../controllers/clientesController.js");
 
 const router = express.Router();
 
-router.get("/", obtenerClientes);
-router.get("/:id", obtenerCliente);
-router.post("/", crearCliente);
-router.put("/:id", actualizarCliente);
-router.delete("/:id", eliminarCliente);
+router.get("/", controller.getAll);
+router.get("/:id", controller.getById);
+router.post("/", controller.create);
+router.put("/:id", controller.update);
+router.delete("/:id", controller.delete);
 
-export default router;
+module.exports = router;

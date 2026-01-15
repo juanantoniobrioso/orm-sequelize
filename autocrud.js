@@ -1,119 +1,110 @@
-// autocrud.js
-import fs from "fs";
-import path from "path";
+const fs = require("fs");
+const path = require("path");
 
+// CONFIGURACIÓN
 const modelsPath = "./models";
 const controllersPath = "./controllers";
+const baseControllerPath = "./controllers/base";
+const servicesPath = "./services";
 const routesPath = "./routes";
 
-fs.mkdirSync(controllersPath, { recursive: true });
-fs.mkdirSync(routesPath, { recursive: true });
+// Crear directorios necesarios
+[modelsPath, controllersPath, baseControllerPath, servicesPath, routesPath].forEach(dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
 
-// Filtramos solo los modelos (sin incluir init-models.js)
+// 1. BASE CONTROLLER (Estándar CommonJS)
+const baseControllerContent = `// controllers/base/BaseController.js
+class BaseController {
+  constructor(service) { this.service = service; }
+  
+  handleRequest = async (fn, req, res) => {
+    try { await fn(req, res); } 
+    catch (error) { console.error(error); res.status(500).json({ error: error.message }); }
+  }
+
+  getAll = async (req, res) => this.handleRequest(async () => res.json(await this.service.findAll()), req, res);
+  getById = async (req, res) => this.handleRequest(async () => {
+    const item = await this.service.findById(req.params.id);
+    item ? res.json(item) : res.status(404).json({ message: "Not found" });
+  }, req, res);
+  create = async (req, res) => this.handleRequest(async () => res.status(201).json(await this.service.create(req.body)), req, res);
+  update = async (req, res) => this.handleRequest(async () => res.json(await this.service.update(req.params.id, req.body)), req, res);
+  delete = async (req, res) => this.handleRequest(async () => res.json(await this.service.delete(req.params.id)), req, res);
+}
+module.exports = { BaseController };
+`;
+fs.writeFileSync(`${baseControllerPath}/BaseController.js`, baseControllerContent);
+
+// 2. PROCESAR CADA MODELO
 const models = fs.readdirSync(modelsPath)
-  .filter(f => f.endsWith(".js") && f !== "init-models.js");
+  .filter(f => f.endsWith(".js") && f !== "init-models.js" && f !== "index.js");
 
 for (const modelFile of models) {
-  const modelName = path.basename(modelFile, ".js"); // ejemplo: productos
-  const modelClass = modelName.charAt(0).toUpperCase() + modelName.slice(1); // Productos
-  const singular = modelName.replace(/s$/, ""); // producto, cliente, pedido, etc.
+  const modelNameOriginal = path.basename(modelFile, ".js"); // ej: "productos"
+  const modelClass = modelNameOriginal.charAt(0).toUpperCase() + modelNameOriginal.slice(1);
+  
+  const ServiceClass = `${modelClass}Service`;
+  const ControllerClass = `${modelClass}Controller`;
 
-  // ---------- CONTROLADOR ----------
-  const controllerContent = `// controllers/${modelName}Controller.js
-import { sequelize } from "../config/db.js";
-import ${modelName} from "../models/${modelFile}";
-import { DataTypes } from "sequelize";
+  // --- SERVICIO (CORREGIDO CON LAZY LOADING) ---
+  // Usamos 'get model()' para buscar el modelo en el momento de la consulta, no al inicio.
+  const serviceContent = `// services/${modelNameOriginal}Service.js
+const { sequelize } = require("../config/db.js");
 
-// 🔧 Inicializamos el modelo con la conexión activa
-const ${modelClass.slice(0, -1)} = ${modelName}.init(sequelize, DataTypes);
-
-// CREATE
-export const crear${modelClass.slice(0, -1)} = async (req, res) => {
-  try {
-    const nuevo = await ${modelClass.slice(0, -1)}.create(req.body);
-    res.status(201).json(nuevo);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: "Error al crear ${singular}", error });
+class ${ServiceClass} {
+  
+  get model() {
+    // Busca el modelo justo cuando se necesita, asegurando que ya esté cargado
+    return sequelize.models.${modelNameOriginal} || sequelize.models.${modelClass};
   }
-};
 
-// READ (todos)
-export const obtener${modelClass} = async (req, res) => {
-  try {
-    const lista = await ${modelClass.slice(0, -1)}.findAll();
-    res.json(lista);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: "Error al obtener ${modelName}", error });
+  async findAll() { return await this.model.findAll(); }
+  async findById(id) { return await this.model.findByPk(id); }
+  async create(data) { return await this.model.create(data); }
+  async update(id, data) {
+    const item = await this.findById(id);
+    return item ? await item.update(data) : null;
   }
-};
-
-// READ (uno)
-export const obtener${modelClass.slice(0, -1)} = async (req, res) => {
-  try {
-    const item = await ${modelClass.slice(0, -1)}.findByPk(req.params.id);
-    if (!item) return res.status(404).json({ mensaje: "No encontrado" });
-    res.json(item);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: "Error al obtener ${singular}", error });
-  }
-};
-
-// UPDATE
-export const actualizar${modelClass.slice(0, -1)} = async (req, res) => {
-  try {
-    const item = await ${modelClass.slice(0, -1)}.findByPk(req.params.id);
-    if (!item) return res.status(404).json({ mensaje: "No encontrado" });
-    await item.update(req.body);
-    res.json(item);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: "Error al actualizar ${singular}", error });
-  }
-};
-
-// DELETE
-export const eliminar${modelClass.slice(0, -1)} = async (req, res) => {
-  try {
-    const item = await ${modelClass.slice(0, -1)}.findByPk(req.params.id);
-    if (!item) return res.status(404).json({ mensaje: "No encontrado" });
+  async delete(id) {
+    const item = await this.findById(id);
+    if (!item) return null;
     await item.destroy();
-    res.json({ mensaje: "${modelClass.slice(0, -1)} eliminado correctamente" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: "Error al eliminar ${singular}", error });
+    return true;
   }
-};
+}
+module.exports = { ${ServiceClass} };
 `;
+  fs.writeFileSync(`${servicesPath}/${modelNameOriginal}Service.js`, serviceContent);
 
-  fs.writeFileSync(`${controllersPath}/${modelName}Controller.js`, controllerContent);
+  // --- CONTROLADOR ---
+  const controllerContent = `// controllers/${modelNameOriginal}Controller.js
+const { BaseController } = require("./base/BaseController.js");
+const { ${ServiceClass} } = require("../services/${modelNameOriginal}Service.js");
 
-  // ---------- RUTA ----------
-  const routeContent = `// routes/${modelName}Routes.js
-import express from "express";
-import {
-  crear${modelClass.slice(0, -1)},
-  obtener${modelClass},
-  obtener${modelClass.slice(0, -1)},
-  actualizar${modelClass.slice(0, -1)},
-  eliminar${modelClass.slice(0, -1)}
-} from "../controllers/${modelName}Controller.js";
+class ${ControllerClass} extends BaseController {
+  constructor() { super(new ${ServiceClass}()); }
+}
+module.exports = new ${ControllerClass}();
+`;
+  fs.writeFileSync(`${controllersPath}/${modelNameOriginal}Controller.js`, controllerContent);
+
+  // --- RUTAS ---
+  const routeContent = `// routes/${modelNameOriginal}Routes.js
+const express = require("express");
+const controller = require("../controllers/${modelNameOriginal}Controller.js");
 
 const router = express.Router();
 
-router.get("/", obtener${modelClass});
-router.get("/:id", obtener${modelClass.slice(0, -1)});
-router.post("/", crear${modelClass.slice(0, -1)});
-router.put("/:id", actualizar${modelClass.slice(0, -1)});
-router.delete("/:id", eliminar${modelClass.slice(0, -1)});
+router.get("/", controller.getAll);
+router.get("/:id", controller.getById);
+router.post("/", controller.create);
+router.put("/:id", controller.update);
+router.delete("/:id", controller.delete);
 
-export default router;
+module.exports = router;
 `;
-
-  fs.writeFileSync(`${routesPath}/${modelName}Routes.js`, routeContent);
-  console.log(`✅ CRUD generado para: ${modelName}`);
+  fs.writeFileSync(`${routesPath}/${modelNameOriginal}Routes.js`, routeContent);
+  
+  console.log(`✅ Stack generado para: ${modelNameOriginal}`);
 }
-
-console.log("🎉 Todos los controladores y rutas han sido generados correctamente.");
