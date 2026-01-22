@@ -1,24 +1,24 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('tareas', {
+  return sequelize.define('node1', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    titulo: {
-      type: DataTypes.STRING(255),
+    node: {
+      type: DataTypes.TEXT,
       allowNull: false
     },
-    completada: {
-      type: DataTypes.TINYINT,
+    descripcion: {
+      type: DataTypes.TEXT,
       allowNull: true,
-      defaultValue: 0
     }
   }, {
     sequelize,
-    tableName: 'tareas',
+    tableName: 'node1',
+    freezeTableName: true,
     timestamps: false,
     indexes: [
       {

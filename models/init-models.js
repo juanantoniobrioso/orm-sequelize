@@ -5,7 +5,7 @@ var _detalles_pedido = require("./detalles_pedido");
 var _log = require("./log");
 var _pedidos = require("./pedidos");
 var _productos = require("./productos");
-var _tareas = require("./tareas")
+var _node1 = require("./node1");
 
 function initModels(sequelize) {
   var categorias = _categorias(sequelize, DataTypes);
@@ -14,7 +14,7 @@ function initModels(sequelize) {
   var log = _log(sequelize, DataTypes);
   var pedidos = _pedidos(sequelize, DataTypes);
   var productos = _productos(sequelize, DataTypes);
-  var tareas = _tareas(sequelize, DataTypes);
+  var node1 = _node1(sequelize, DataTypes);
 
   pedidos.belongsTo(clientes, { as: "cliente", foreignKey: "cliente_id"});
   clientes.hasMany(pedidos, { as: "pedidos", foreignKey: "cliente_id"});
@@ -30,7 +30,7 @@ function initModels(sequelize) {
     log,
     pedidos,
     productos,
-    tareas
+    node1
   };
 }
 module.exports = initModels;

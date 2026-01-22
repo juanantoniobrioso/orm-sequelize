@@ -1,40 +1,43 @@
-const express = require("express");
-const cors = require("cors");
-const { sequelize } = require("./config/db.js");
-const initModels = require("./models/init-models.js");
 
-// Importar rutas generadas
-const productosRoutes = require("./routes/productosRoutes.js");
-const logRoutes = require("./routes/logRoutes.js");
-const pedidosRoutes = require("./routes/pedidosRoutes.js");
-const clientesRoutes = require("./routes/clientesRoutes.js");
-const categoriasRoutes = require("./routes/categoriasRoutes.js");
-const detallesRoutes = require("./routes/detalles_pedidoRoutes.js");
+// server.js
+import express from "express";
+import { sequelize } from "./config/db.js";
+import initModels from "./models/init-models.js";
+
+// Importar todas las rutas
+import productosRoutes from "./routes/productosRoutes.js";
+import categoriasRoutes from "./routes/categoriasRoutes.js";
+import clientesRoutes from "./routes/clientesRoutes.js";
+import pedidosRoutes from "./routes/pedidosRoutes.js";
+import logRoutes from "./routes/logRoutes.js";
+import detallesPedidoRoutes from "./routes/detalles_pedidoRoutes.js";
+import node1Routes from "./routes/node1Routes.js";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+initModels(sequelize);
 
-// 1. Inicializar Modelos
-initModels(sequelize); 
+// Registrando las rutas importadas
+app.use('/api/productos', productosRoutes);
+app.use('/api/categorias', categoriasRoutes);
+app.use('/api/clientes', clientesRoutes);
+app.use('/api/pedidos', pedidosRoutes);
+app.use('/api/logs', logRoutes);
+app.use('/api/detallesPedidos', detallesPedidoRoutes);
+app.use('/api/node1', node1Routes);
 
-// 2. Definir Rutas
-app.use("/api/productos", productosRoutes);
-app.use("/api/logs", logRoutes);
-app.use("/api/pedidos", pedidosRoutes);
-app.use("/api/clientes", clientesRoutes);
-app.use("/api/categorias", categoriasRoutes);
-app.use("/api/detalles_pedido", detallesRoutes);
-
-// 3. Arrancar Servidor
+// 🔌 Verificar y sincronizar la base de datos
 (async () => {
   try {
+    await sequelize.authenticate();
+    console.log("✅ Conexión establecida con la base de datos:", sequelize.config.database);
     await sequelize.sync({ alter: true });
-    console.log("✅ Base de datos sincronizada.");
-    
-    const PORT = 3000;
-    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
+    console.log("✅ Tablas sincronizadas correctamente.");
   } catch (error) {
-    console.error("❌ Error al iniciar:", error);
+    console.error("❌ Error al sincronizar las tablas:", error);
   }
 })();
+
+// 🚀 Arrancar servidor
+const PORT = 3000;
+app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
