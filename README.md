@@ -11,6 +11,3 @@ node autocrud.js
 ## Lanzar servidor
 
 node server.js
-
-
-
