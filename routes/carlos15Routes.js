@@ -1,6 +1,6 @@
-// routes/node1Routes.js
+// routes/carlos15Routes.js
 const express = require("express");
-const controller = require("../controllers/node1Controller.js");
+const controller = require("../controllers/carlos15Controller.js");
 
 const router = express.Router();
 

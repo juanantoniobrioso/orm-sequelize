@@ -1,20 +1,27 @@
-var DataTypes = require("sequelize").DataTypes;
-var _categorias = require("./categorias");
-var _clientes = require("./clientes");
-var _detalles_pedido = require("./detalles_pedido");
-var _log = require("./log");
-var _pedidos = require("./pedidos");
-var _productos = require("./productos");
-var _node1 = require("./node1");
+import _sequelize from "sequelize";
+const DataTypes = _sequelize.DataTypes;
+import _carlos15 from  "./carlos15.js";
+import _categorias from  "./categorias.js";
+import _clientes from  "./clientes.js";
+import _detalles_pedido from  "./detalles_pedido.js";
+import _hola from  "./hola.js";
+import _log from  "./log.js";
+import _node1 from  "./node1.js";
+import _pedidos from  "./pedidos.js";
+import _productos from  "./productos.js";
+import _test1 from  "./test1.js";
 
-function initModels(sequelize) {
-  var categorias = _categorias(sequelize, DataTypes);
-  var clientes = _clientes(sequelize, DataTypes);
-  var detalles_pedido = _detalles_pedido(sequelize, DataTypes);
-  var log = _log(sequelize, DataTypes);
-  var pedidos = _pedidos(sequelize, DataTypes);
-  var productos = _productos(sequelize, DataTypes);
-  var node1 = _node1(sequelize, DataTypes);
+export default function initModels(sequelize) {
+  const carlos15 = _carlos15.init(sequelize, DataTypes);
+  const categorias = _categorias.init(sequelize, DataTypes);
+  const clientes = _clientes.init(sequelize, DataTypes);
+  const detalles_pedido = _detalles_pedido.init(sequelize, DataTypes);
+  const hola = _hola.init(sequelize, DataTypes);
+  const log = _log.init(sequelize, DataTypes);
+  const node1 = _node1.init(sequelize, DataTypes);
+  const pedidos = _pedidos.init(sequelize, DataTypes);
+  const productos = _productos.init(sequelize, DataTypes);
+  const test1 = _test1.init(sequelize, DataTypes);
 
   pedidos.belongsTo(clientes, { as: "cliente", foreignKey: "cliente_id"});
   clientes.hasMany(pedidos, { as: "pedidos", foreignKey: "cliente_id"});
@@ -24,15 +31,15 @@ function initModels(sequelize) {
   productos.hasMany(detalles_pedido, { as: "detalles_pedidos", foreignKey: "producto_id"});
 
   return {
+    carlos15,
     categorias,
     clientes,
     detalles_pedido,
+    hola,
     log,
+    node1,
     pedidos,
     productos,
-    node1
+    test1,
   };
 }
-module.exports = initModels;
-module.exports.initModels = initModels;
-module.exports.default = initModels;
