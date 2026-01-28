@@ -1,24 +1,26 @@
-const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('tareas', {
+import _sequelize from 'sequelize';
+const { Model, Sequelize } = _sequelize;
+
+export default class test1 extends Model {
+  static init(sequelize, DataTypes) {
+  return super.init({
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    titulo: {
-      type: DataTypes.STRING(255),
+    test: {
+      type: DataTypes.TEXT,
       allowNull: false
     },
-    completada: {
-      type: DataTypes.TINYINT,
-      allowNull: true,
-      defaultValue: 0
+    descripcion: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
   }, {
     sequelize,
-    tableName: 'tareas',
+    tableName: 'test1',
     timestamps: false,
     indexes: [
       {
@@ -31,4 +33,5 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
-};
+  }
+}
